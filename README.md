@@ -1,24 +1,103 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# CRUD Platform
 
-## Getting Started
+A web application that provides a CRUD API with credit-based access control. Users can authenticate using Google and receive API credentials for making requests.
 
-First, run the development server:
+## Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Google Authentication
+- API Key and URL generation
+- Credit-based API access
+- One-time credit recharge via email
+- CRUD operations for data management
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Prerequisites
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- Node.js 18+ and npm
+- PostgreSQL database
+- Google OAuth credentials
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Setup
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+
+3. Set up environment variables in `.env`:
+   ```
+   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/crud_platform"
+   NEXTAUTH_URL="http://localhost:3000"
+   NEXTAUTH_SECRET="your-secret-key-here"
+   GOOGLE_CLIENT_ID="your-google-client-id"
+   GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   ADMIN_EMAIL="admin@example.com"
+   ```
+
+4. Set up the database:
+   ```bash
+   npx prisma migrate dev
+   ```
+
+5. Start the development server:
+   ```bash
+   npm run dev
+   ```
+
+## API Usage
+
+### Authentication
+
+All API requests require the following headers:
+- `x-api-key`: Your API key
+- `x-api-url`: Your API URL
+
+### Endpoints
+
+#### Data Operations
+
+- `GET /api/data` - Get all data
+- `POST /api/data` - Create new data
+  ```json
+  {
+    "title": "Example Title",
+    "content": "Example Content"
+  }
+  ```
+- `GET /api/data/[id]` - Get specific data
+- `PUT /api/data/[id]` - Update data
+  ```json
+  {
+    "title": "Updated Title",
+    "content": "Updated Content"
+  }
+  ```
+- `DELETE /api/data/[id]` - Delete data
+
+### Credit System
+
+- Each user starts with 4 credits
+- Each API request consumes 1 credit
+- When credits are exhausted, users can request a recharge by emailing the admin
+- Users can only recharge once
+
+## Error Handling
+
+The API returns appropriate HTTP status codes and error messages:
+
+- 400: Bad Request (invalid input)
+- 401: Unauthorized (missing/invalid credentials)
+- 403: Forbidden (insufficient credits)
+- 404: Not Found
+- 500: Internal Server Error
+
+## Development
+
+- Frontend: Next.js with TypeScript
+- Backend: Node.js with Express
+- Database: PostgreSQL with Prisma ORM
+- Authentication: NextAuth.js
+- Styling: Tailwind CSS
 
 ## Learn More
 
