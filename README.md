@@ -1,115 +1,194 @@
-# CRUD Platform
+# CRUD Platform with Credit System
 
-A web application that provides a CRUD API with credit-based access control. Users can authenticate using Google and receive API credentials for making requests.
+A Next.js-based CRUD platform with user authentication, API key management, and a credit-based system for data operations.
 
 ## Features
 
-- Google Authentication
-- API Key and URL generation
-- Credit-based API access
-- One-time credit recharge via email
-- CRUD operations for data management
+- **User Authentication**: Secure sign-in and sign-up functionality
+- **API Key Management**: Each user gets unique API credentials
+- **Credit System**: Users start with 4 credits and can request one recharge
+- **Data Management**: Create, read, update, and delete data entries
+- **Credit Tracking**: Monitor credit usage and recharge status
+
+## Tech Stack
+
+- **Frontend**: Next.js 15.3.1, React 19, TailwindCSS
+- **Backend**: Next.js API Routes
+- **Database**: PostgreSQL with Prisma ORM
+- **Authentication**: NextAuth.js
+- **Styling**: TailwindCSS
 
 ## Prerequisites
 
-- Node.js 18+ and npm
-- PostgreSQL database
-- Google OAuth credentials
+- Node.js (v18 or higher)
+- Docker (for local PostgreSQL)
+- npm or yarn package manager
 
-## Setup
+## Installation
 
-1. Clone the repository
-2. Install dependencies:
+1. Clone the repository:
+   ```bash
+   git clone <repository-url>
+   cd crud-platform
+   ```
+
+2. Set up the database (choose one option):
+
+   ### Option 1: Local PostgreSQL with Docker
+   ```bash
+   # Start PostgreSQL container
+   docker run --name crud-platform-db \
+     -e POSTGRES_USER=postgres \
+     -e POSTGRES_PASSWORD=postgres \
+     -e POSTGRES_DB=crud_platform \
+     -p 5432:5432 \
+     -d postgres:latest
+
+   # Stop the container when needed
+   docker stop crud-platform-db
+   docker rm crud-platform-db
+   ```
+
+   ### Option 2: Neon Database (Free Tier)
+   1. Sign up at [Neon](https://neon.tech)
+   2. Create a new project
+   3. Copy the connection string from the dashboard
+   4. Replace the DATABASE_URL in your .env file
+
+   ### Option 3: Supabase Database (Free Tier)
+   1. Sign up at [Supabase](https://supabase.com)
+   2. Create a new project
+   3. Get the connection string from Settings > Database
+   4. Replace the DATABASE_URL in your .env file
+
+3. Set up environment variables:
+   ```bash
+   # Copy the example environment file
+   cp .env.example .env
+
+   # Edit .env with your configuration
+   nano .env
+   ```
+
+4. Install dependencies:
    ```bash
    npm install
    ```
 
-3. Set up environment variables in `.env`:
-   ```
-   DATABASE_URL="postgresql://postgres:postgres@localhost:5432/crud_platform"
-   NEXTAUTH_URL="http://localhost:3000"
-   NEXTAUTH_SECRET="your-secret-key-here"
-   GOOGLE_CLIENT_ID="your-google-client-id"
-   GOOGLE_CLIENT_SECRET="your-google-client-secret"
-   ADMIN_EMAIL="admin@example.com"
-   ```
-
-4. Set up the database:
+5. Initialize the database:
    ```bash
-   npx prisma migrate dev
+   npm run init-db
    ```
 
-5. Start the development server:
+6. Start the development server:
    ```bash
    npm run dev
    ```
 
-## API Usage
+The application will be available at `http://localhost:3000`.
 
-### Authentication
+## Usage
 
-All API requests require the following headers:
-- `x-api-key`: Your API key
-- `x-api-url`: Your API URL
+### User Registration and Authentication
 
-### Endpoints
-
-#### Data Operations
-
-- `GET /api/data` - Get all data
-- `POST /api/data` - Create new data
-  ```json
-  {
-    "title": "Example Title",
-    "content": "Example Content"
-  }
-  ```
-- `GET /api/data/[id]` - Get specific data
-- `PUT /api/data/[id]` - Update data
-  ```json
-  {
-    "title": "Updated Title",
-    "content": "Updated Content"
-  }
-  ```
-- `DELETE /api/data/[id]` - Delete data
+1. Navigate to `/auth/signup` to create a new account
+2. After registration, you'll receive:
+   - API Key
+   - API URL
+   - 4 initial credits
 
 ### Credit System
 
-- Each user starts with 4 credits
-- Each API request consumes 1 credit
-- When credits are exhausted, users can request a recharge by emailing the admin
-- Users can only recharge once
+- Users start with 4 credits
+- Each data operation (create/update/delete) costs 1 credit
+- Users can request one recharge (4 additional credits) via email
+- To simulate a recharge request:
+  ```bash
+  node scripts/simulate-recharge.js user@example.com
+  ```
 
-## Error Handling
+### API Usage
 
-The API returns appropriate HTTP status codes and error messages:
+All API endpoints require authentication using the API credentials:
 
-- 400: Bad Request (invalid input)
-- 401: Unauthorized (missing/invalid credentials)
-- 403: Forbidden (insufficient credits)
-- 404: Not Found
-- 500: Internal Server Error
+```bash
+curl -X POST http://localhost:3000/api/data \
+  -H "Content-Type: application/json" \
+  -H "x-api-key: YOUR_API_KEY" \
+  -H "x-api-url: YOUR_API_URL" \
+  -d '{"title": "Test Data", "content": "Test Content"}'
+```
+
+Available API endpoints:
+- `POST /api/data` - Create new data entry
+- `GET /api/data` - List all data entries
+- `PUT /api/data/:id` - Update data entry
+- `DELETE /api/data/:id` - Delete data entry
+- `POST /api/recharge` - Request credit recharge
+
+### Testing
+
+The project includes several test scripts:
+
+1. Create a test user:
+   ```bash
+   node scripts/create-test-user.js
+   ```
+
+2. Test API endpoints:
+   ```bash
+   node scripts/test-api.js
+   ```
+
+3. Test the application:
+   ```bash
+   node scripts/test-application.js
+   ```
+
+4. Simulate credit recharge:
+   ```bash
+   node scripts/simulate-recharge.js user@example.com
+   ```
+
+## Project Structure
+
+```
+crud-platform/
+├── app/                    # Next.js app directory
+│   ├── api/               # API routes
+│   ├── auth/              # Authentication pages
+│   └── page.tsx           # Main application page
+├── prisma/                # Prisma schema and migrations
+├── scripts/               # Utility scripts
+├── types/                 # TypeScript type definitions
+└── public/                # Static assets
+```
 
 ## Development
 
-- Frontend: Next.js with TypeScript
-- Backend: Node.js with Express
-- Database: PostgreSQL with Prisma ORM
-- Authentication: NextAuth.js
-- Styling: Tailwind CSS
+### Database Migrations
 
-## Learn More
+To create a new migration:
+```bash
+npx prisma migrate dev --name migration_name
+```
 
-To learn more about Next.js, take a look at the following resources:
+To apply migrations:
+```bash
+npx prisma migrate deploy
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Adding New Features
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Create new API routes in `app/api/`
+2. Update Prisma schema in `prisma/schema.prisma`
+3. Run migrations
+4. Update frontend components in `app/`
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+[Your License]
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Contributing
+
+[Your Contributing Guidelines]
